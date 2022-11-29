@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 use async_graphql::{Context, ErrorExtensions};
 
@@ -83,7 +83,13 @@ impl Mutation {
 
         let _user = g_ctx
             .db
-            .remove_favorite_city(&input.token, &input.name)
+            .remove_favorite_city(
+                &input.token,
+                &City {
+                    name: input.name,
+                    country: input.country,
+                },
+            )
             .await
             .map_err(|e| e.extend())?;
 
@@ -148,7 +154,7 @@ impl From<SignupInput> for User {
             name: v.name,
             email: v.email,
             password: v.password,
-            favorite_cities: HashMap::default(),
+            favorite_cities: HashSet::default(),
         }
     }
 }

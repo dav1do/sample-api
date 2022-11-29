@@ -46,7 +46,7 @@ impl From<User> for UserData {
     fn from(v: User) -> Self {
         let favorite_cities = v
             .favorite_cities
-            .into_values()
+            .into_iter()
             .map(CityData::from)
             .collect::<_>();
         Self {

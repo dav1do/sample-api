@@ -85,7 +85,7 @@ impl MemoryDb {
         let mut authed = self.authed_users.lock().await;
         if let Some(mut user) = authed.get(token).map(|u| u.to_owned()) {
             // having two datasets to keep in sync is dumb. but for now we just use authed users as source of truth after signup
-            user.favorite_cities.insert(city.name.clone(), city);
+            user.favorite_cities.insert(city);
             authed.insert(token.to_string(), user.clone());
             Ok(user)
         } else {
@@ -95,11 +95,11 @@ impl MemoryDb {
 
     // maybe too much logic here but not enough time to refactor as I'd like
     #[tracing::instrument(level = "DEBUG", skip(self, token))]
-    pub async fn remove_favorite_city(&self, token: &str, name: &str) -> Result<User, Error> {
+    pub async fn remove_favorite_city(&self, token: &str, city: &City) -> Result<User, Error> {
         let mut authed = self.authed_users.lock().await;
         if let Some(mut user) = authed.get(token).map(|u| u.to_owned()) {
             // having two datasets to keep in sync is dumb. but for now we just use authed users as source of truth after signup
-            user.favorite_cities.remove(name);
+            user.favorite_cities.remove(city);
             authed.insert(token.to_string(), user.clone());
             Ok(user)
         } else {

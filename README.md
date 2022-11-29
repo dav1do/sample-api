@@ -58,9 +58,30 @@ mutation removeCity($token: String!) {
 ## Limitations
 - The database is in memory and will disappear each restart
 - Tokens are not handled as JWTs but instead passed in as post body parameters
-- Nothing is configurable (port, no secrets, etc)
+- Nothing is configurable (e.g. port)
 - Data models are trivial (no created_at/updated_at timestamps)
 - No tests... decided to fix city name collison bug instead of adding them
+- No metrics, logs need
+
+```rust
+use actix_web::{
+    test::{self, init_service, TestRequest},
+    web, App,
+};
+
+// could test with integration approach using something like what is in main.rs plus 
+let app = init_service(
+    App::new()
+        .app_data(data.clone())
+        .app_data(schema.clone())
+        .wrap(actix_web::middleware::Logger::default())
+        .service(routes),
+)
+.await;
+
+let resp = test::call_and_read_body_json(&app, req.to_request()).await;
+resp
+```
 
 ## Tasks
 Should be able to accomplish the following:

@@ -11,7 +11,6 @@ pub enum Error {
 
 impl ErrorExtensions for Error {
     fn extend(&self) -> async_graphql::Error {
-        // consider: do we want to include the error message? wish we could handle prod vs test differently
         async_graphql::Error::new(format!("{}", self)).extend_with(|_err, e| match self {
             Error::Unauthorized => {
                 tracing::warn!("Unauthorized");
