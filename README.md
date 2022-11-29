@@ -22,6 +22,35 @@ mutation login {
     token
   }
 }
+
+query favs($token: String) {
+  getUser(input: {token:$token}) {
+    name
+    email
+    favoriteCities {
+      name
+      country
+    }
+  }
+}
+
+mutation addCity($token: String!) {
+  addFavoriteCity(
+    input: { token: $token, name: "Minneapolis", country: "USA" }
+  ) {
+    city {
+      name
+      country
+    }
+  }
+}
+
+mutation removeCity($token: String!) {
+  removeFavoriteCity(input: { token: $token, name: "Minneapolis", country: "USA" }) {
+    success
+  }
+}
+
 ```
 
 ## Tasks

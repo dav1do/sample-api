@@ -48,7 +48,7 @@ impl Mutation {
         }
     }
 
-    async fn add_favorite_cities(
+    async fn add_favorite_city(
         &self,
         ctx: &Context<'_>,
         input: AddFavoriteCityInput,
@@ -70,7 +70,7 @@ impl Mutation {
         Ok(AddFavoriteCityResult { city: city.into() })
     }
 
-    async fn remove_favorite_cities(
+    async fn remove_favorite_city(
         &self,
         ctx: &Context<'_>,
         input: AddFavoriteCityInput,
