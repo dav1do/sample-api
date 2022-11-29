@@ -11,6 +11,7 @@ pub struct Mutation;
 
 #[async_graphql::Object]
 impl Mutation {
+    #[tracing::instrument(level = "INFO", skip(self, ctx, input))]
     async fn signup(
         &self,
         ctx: &Context<'_>,
@@ -28,6 +29,7 @@ impl Mutation {
     }
 
     /// Returns token to use for adding/removing favorite cities
+    #[tracing::instrument(level = "INFO", skip(self, ctx, input))]
     async fn login(
         &self,
         ctx: &Context<'_>,
@@ -48,6 +50,7 @@ impl Mutation {
         }
     }
 
+    #[tracing::instrument(level = "INFO", skip(self, ctx, input))]
     async fn add_favorite_city(
         &self,
         ctx: &Context<'_>,
@@ -70,6 +73,7 @@ impl Mutation {
         Ok(AddFavoriteCityResult { city: city.into() })
     }
 
+    #[tracing::instrument(level = "INFO", skip(self, ctx, input))]
     async fn remove_favorite_city(
         &self,
         ctx: &Context<'_>,

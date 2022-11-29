@@ -11,6 +11,7 @@ pub struct User {
 
 impl User {
     /// This should use hashing when we store and check but simple for now
+    #[tracing::instrument(level = "DEBUG", skip(self, input_password))]
     pub fn verify_password(&self, input_password: &str) -> bool {
         if self.password == input_password {
             true

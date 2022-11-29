@@ -15,10 +15,11 @@ async fn main() -> std::io::Result<()> {
         .try_init()
         .ok();
 
+    let app_data = api::AppData::new();
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(graphql::new_schema()))
-            .app_data(web::Data::new(api::AppData::new()))
+            .app_data(web::Data::new(app_data.clone()))
             .wrap(Logger::default())
             .service(
                 web::resource("/graphql").route(

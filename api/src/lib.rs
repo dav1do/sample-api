@@ -6,6 +6,7 @@ use actix_web::{web, HttpResponse};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use graphql::{playground_source, GqlContext, GqlSchema, GraphQLPlaygroundConfig, MemoryDb};
 
+#[derive(Clone, Debug)]
 pub struct AppData {
     pub db: MemoryDb, // normally would use a db pool/trait to mock this out
 }
