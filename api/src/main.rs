@@ -18,6 +18,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(graphql::new_schema()))
+            .app_data(web::Data::new(api::AppData::new()))
             .wrap(Logger::default())
             .service(
                 web::resource("/graphql").route(
@@ -29,7 +30,7 @@ async fn main() -> std::io::Result<()> {
                         )
                         .to(index),
                 ),
-            ) // can support get but for simplicity skipping it
+            )
             .service(
                 web::resource("/playground").route(
                     web::route()

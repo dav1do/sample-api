@@ -1,11 +1,28 @@
 
 # Sample API
 
-# Local 
+## Local 
 `cargo run` will host on 127.0.0.1:8080
 
 `127.0.0.1:8080/playground` -> get the playground
 `127.0.0.1:8080/graphql` -> execute requests against the api
+
+## Sample Requests
+
+```
+mutation signup {
+  signup(input:{email:"david@test.com", password: "qwerty", name: "david"}) {
+    name
+    email
+  }
+}
+
+mutation login {
+  login(input: {email: "david@test.com", password:"qwerty"}) {
+    token
+  }
+}
+```
 
 ## Tasks
 Should be able to accomplish the following:
