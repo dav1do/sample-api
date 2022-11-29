@@ -2,7 +2,9 @@
 # Sample API
 
 ## Local 
-`cargo run` will host on 127.0.0.1:8080
+
+- copy `.env.sample` to `.env`
+- `cargo run` will host on 127.0.0.1:8080
 
 `127.0.0.1:8080/playground` -> get the playground
 `127.0.0.1:8080/graphql` -> execute requests against the api
@@ -52,6 +54,13 @@ mutation removeCity($token: String!) {
 }
 
 ```
+
+## Limitations
+- The database is in memory and will disappear each restart
+- Tokens are not handled as JWTs but instead passed in as post body parameters
+- Nothing is configurable (port, no secrets, etc)
+- Data models are trivial (no created_at/updated_at timestamps)
+- No tests... decided to fix city name collison bug instead of adding them
 
 ## Tasks
 Should be able to accomplish the following:

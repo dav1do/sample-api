@@ -6,6 +6,11 @@ use tracing_subscriber::{util::SubscriberInitExt, EnvFilter};
 async fn main() -> std::io::Result<()> {
     let _ = env_logger::try_init();
 
+    if let Ok(p) = dotenv::dotenv() {
+        println!("Loading environment from {}", p.display());
+    }
+    let address = "127.0.0.1:8080";
+
     let _ = tracing_subscriber::fmt()
         .with_thread_names(true)
         .with_thread_ids(true)
@@ -16,6 +21,7 @@ async fn main() -> std::io::Result<()> {
         .ok();
 
     let app_data = api::AppData::new();
+    tracing::info!("Staring server on address: {}", address);
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(graphql::new_schema()))
@@ -40,7 +46,7 @@ async fn main() -> std::io::Result<()> {
                 ),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind(address)?
     .run()
     .await
 }
