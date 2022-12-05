@@ -63,10 +63,11 @@ impl Mutation {
             country: input.country,
         };
 
+        let user = g_ctx.verify_token().await?;
         // too much logic in DB here, should validate auth at the service or api level
         let _user = g_ctx
             .db
-            .add_favorite_city(&input.token, city.clone())
+            .add_favorite_city(&user, city.clone())
             .await
             .map_err(|e| e.extend())?;
 
@@ -81,10 +82,12 @@ impl Mutation {
     ) -> async_graphql::Result<RemoveFavoriteCityResult> {
         let g_ctx = ctx.data::<GqlContext>().unwrap();
 
+        let user = g_ctx.verify_token().await?;
+
         let _user = g_ctx
             .db
             .remove_favorite_city(
-                &input.token,
+                &user,
                 &City {
                     name: input.name,
                     country: input.country,

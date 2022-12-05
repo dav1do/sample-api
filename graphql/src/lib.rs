@@ -15,6 +15,7 @@ pub use async_graphql::{
 };
 pub use error::Error;
 use tokio::sync::Mutex;
+use typed_headers::Authorization;
 pub use types::*;
 pub type GqlSchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -31,11 +32,30 @@ pub fn new_schema() -> GqlSchema {
 #[derive(Debug, Default, Clone)]
 pub struct GqlContext {
     pub db: MemoryDb,
+    pub auth: Option<Authorization>,
+}
+
+impl GqlContext {
+    pub async fn verify_token(&self) -> Result<User, Error> {
+        // normally this would use use a JWT and we'd have a Box<dyn JwtAuthorizer> or something on Self we could instantiate from the JWKs
+        if let Some(t) = self.auth.as_ref().map(|t| t.as_bearer()).flatten() {
+            let authed = self
+                .db
+                .get_authed_user(t.as_str())
+                .await
+                .ok_or_else(|| Error::Unauthorized)?;
+
+            Ok(self.db.get_signed_up_user(&authed.email).await.unwrap())
+        } else {
+            Err(Error::Unauthorized)
+        }
+    }
 }
 
 // would normally come from a db crate but for simplicity putting here (probalby should have just done one crate)
 #[derive(Debug, Default, Clone)]
 pub struct MemoryDb {
+    // could do Arc<RwLock<HashMap<String, Mutex<User>>>> or use dashmap for better concurrency
     users: Arc<Mutex<HashMap<String, User>>>, // Email -> User
     /// would normally have a JWT and validate & check sub or something but for simplicity
     authed_users: Arc<Mutex<HashMap<String, User>>>, // token -> User
@@ -79,31 +99,35 @@ impl MemoryDb {
         authed.get(token).map(|u| u.to_owned())
     }
 
-    // maybe too much logic here but not enough time to refactor as I'd like
-    #[tracing::instrument(level = "DEBUG", skip(self, token))]
-    pub async fn add_favorite_city(&self, token: &str, city: City) -> Result<User, Error> {
-        let mut authed = self.authed_users.lock().await;
-        if let Some(mut user) = authed.get(token).map(|u| u.to_owned()) {
-            // having two datasets to keep in sync is dumb. but for now we just use authed users as source of truth after signup
-            user.favorite_cities.insert(city);
-            authed.insert(token.to_string(), user.clone());
-            Ok(user)
+    /// Assumes the user has been authenticated already
+    #[tracing::instrument(level = "DEBUG", skip(self, user))]
+    pub async fn add_favorite_city(&self, user: &User, city: City) -> Result<User, Error> {
+        let mut users = self.users.lock().await;
+        if let Some(updated) = users.get_mut(&user.email) {
+            updated.favorite_cities.insert(city);
+            Ok(updated.to_owned())
         } else {
-            Err(Error::Unauthorized)
+            tracing::error!(
+                ?user,
+                "missing user even though authorized when adding favorite city!"
+            );
+            return Err(Error::Unauthorized);
         }
     }
 
-    // maybe too much logic here but not enough time to refactor as I'd like
-    #[tracing::instrument(level = "DEBUG", skip(self, token))]
-    pub async fn remove_favorite_city(&self, token: &str, city: &City) -> Result<User, Error> {
-        let mut authed = self.authed_users.lock().await;
-        if let Some(mut user) = authed.get(token).map(|u| u.to_owned()) {
-            // having two datasets to keep in sync is dumb. but for now we just use authed users as source of truth after signup
-            user.favorite_cities.remove(city);
-            authed.insert(token.to_string(), user.clone());
-            Ok(user)
+    /// Assumes the user has been authenticated already
+    #[tracing::instrument(level = "DEBUG", skip(self, user))]
+    pub async fn remove_favorite_city(&self, user: &User, city: &City) -> Result<User, Error> {
+        let mut users = self.users.lock().await;
+        if let Some(updated) = users.get_mut(&user.email) {
+            updated.favorite_cities.remove(city);
+            Ok(updated.to_owned())
         } else {
-            Err(Error::Unauthorized)
+            tracing::error!(
+                ?user,
+                "missing user even though authorized when removing favorite city!"
+            );
+            return Err(Error::Unauthorized);
         }
     }
 }

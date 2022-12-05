@@ -1,0 +1,75 @@
+input AddFavoriteCityInput {
+	token: String!
+	name: String!
+	country: String!
+}
+
+type AddFavoriteCityResult {
+	city: CityData!
+}
+
+
+type CityData {
+	name: String!
+	country: String!
+}
+
+
+input GetUserInput {
+	token: String!
+}
+
+
+
+input LoginInput {
+	email: String!
+	password: String!
+}
+
+type LoginResult {
+	token: String!
+}
+
+type Mutation {
+	signup(input: SignupInput!): SignupResult!
+	"""
+	Returns token to use for adding/removing favorite cities
+	"""
+	login(input: LoginInput!): LoginResult!
+	addFavoriteCity(input: AddFavoriteCityInput!): AddFavoriteCityResult!
+	removeFavoriteCity(input: AddFavoriteCityInput!): RemoveFavoriteCityResult!
+}
+
+type Query {
+	"""
+	Gets user data including favorite cities
+	"""
+	getUser(input: GetUserInput!): UserData!
+}
+
+type RemoveFavoriteCityResult {
+	success: Boolean!
+}
+
+input SignupInput {
+	email: String!
+	name: String!
+	password: String!
+}
+
+type SignupResult {
+	email: String!
+	name: String!
+}
+
+
+type UserData {
+	email: String!
+	name: String!
+	favoriteCities: [CityData!]!
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}

@@ -1,25 +1,25 @@
 use async_graphql::{Context, ErrorExtensions};
 
-use crate::{City, Error, GqlContext, User};
+use crate::{City, GqlContext, User};
 
 #[derive(Debug, Default)]
 pub struct Query {}
 
 #[async_graphql::Object]
 impl Query {
-    #[tracing::instrument(level = "INFO", skip(self, ctx, input))]
+    #[tracing::instrument(level = "INFO", skip(self, ctx, _input))]
     /// Gets user data including favorite cities
     async fn get_user(
         &self,
         ctx: &Context<'_>,
-        input: GetUserInput,
-    ) -> async_graphql::Result<Option<UserData>> {
+        // not needed as we have a token now
+        _input: GetUserInput,
+    ) -> async_graphql::Result<UserData> {
         let ctx = ctx.data::<GqlContext>().unwrap();
-        if let Some(user) = ctx.db.get_authed_user(&input.token).await {
-            Ok(Some(user.into()))
-        } else {
-            Err(Error::Unauthorized.extend())
-        }
+        ctx.verify_token()
+            .await
+            .map(UserData::from)
+            .map_err(|e| e.extend())
     }
 }
 
